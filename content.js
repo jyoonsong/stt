@@ -21,8 +21,8 @@ function onMessage(data, sender, response) {
             startRecord();
             break;
         case "buttons":
-            followChat();
             displayButtons();
+            followChat();
             break;
         case "save":
             saveJson();
@@ -64,25 +64,19 @@ function startRecord() {
 }
 
 function createNode(index) {
-    let arr = [];
-    // let speaker = -1;
-
-    // // figure out speaker
-    // targets.forEach(function(target, i) {
-    //     // arr[i] = parseInt( getComputedStyle( target ).opacity );
-    //     // console.log(i + "th opacity: " + arr[i]);
-
-    //     if (speaker < 0 || arr[speaker] < arr[i]) {
-    //         speaker = i; // max opacity
-    //     }
-    // });
-
-    // let speaker_name = (speaker < 0) ? "Welcome" : targets[speaker].innerText;
-
     allNodes[index] = {
-        // speaker: speaker_name,
-        memo: "Trasncription started."
+        memo: ""
     }
+
+    // create dom element
+    let b = document.createElement('div');
+    b.setAttribute("class", "box");
+    b.innerHTML = contentOf(index);
+
+    // show it
+    sidebar.appendChild(b);
+    b.scrollIntoView(false);
+    b.setAttribute("index", index);
 }
 
 function followChat() {
@@ -97,7 +91,7 @@ function followChat() {
 
     recognition.continuous = true;
     recognition.lang = 'en-US';
-    recognition.interimResults = false;
+    recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     // start
@@ -106,19 +100,35 @@ function followChat() {
 
     recognition.onresult = function(event) {
 
-        // console.log("* recognition result");
-        // console.log(event.results);
+        console.log("onresult");
+        document.querySelector(".box:last-child > span").innerHTML = event.results[event.resultIndex][0].transcript;
 
-        // update previous node
-        allNodes[allNodes.length - 1].memo = event.results[event.resultIndex][0].transcript + '.';
-        addNode(allNodes.length - 1);
+        if (event.results[event.resultIndex].isFinal) {
+            let prev = allNodes.length - 1;
+            // update previous node shown
+            // update previous node in array
+            allNodes[prev].memo = event.results[event.resultIndex][0].transcript + '.';
+            // store data in the browser
+            localStorage.setItem("item" + prev, allNodes[prev]);
+            // create next node
+            createNode(allNodes.length);
+        }
+        
 
-        // create next node
-        createNode(allNodes.length);
+    }
+
+    recognition.onsoundend = function(e) {
+        console.log("onsoundend")
+        // addNode(allNodes.length - 1);
+    }
+
+    recognition.onspeechend = function(e) {
+        console.log("onspeechend")
         
     }
 
-    recognition.onend = function() {
+    recognition.onend = function(e) {
+        console.log("onend")
         // start a new speech recognition again
         recognition.start();
     }
@@ -194,22 +204,6 @@ function displayButtons() {
     sidebar.innerHTML = "<h4 style='margin-top: 0'>Transcript</h4>";
 
 }
-
-function addNode(index) {
-    // create dom element
-    let b = document.createElement('div');
-    b.setAttribute("class", "box");
-    b.innerHTML = contentOf(index);
-
-    // show it
-    sidebar.appendChild(b);
-    b.scrollIntoView(false);
-    b.setAttribute("index", index);
-
-    // store data in the browser
-    localStorage.setItem("item" + index, allNodes[index]);
-}
-
 
 function contentOf(index) {
     let ele = allNodes[index];
