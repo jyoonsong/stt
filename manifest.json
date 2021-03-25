@@ -1,0 +1,39 @@
+{
+    "manifest_version": 2,
+    "name": "Real-time STT Transcription for Zoom",
+    "version": "1.0",
+    "description": "Real-time Speech-to-text (STT) Transcription for Zoom",
+   
+    "browser_action": {
+      "default_icon": "icon.png"
+    },
+
+    "background": {
+      "scripts": [
+        "background.js"
+      ]
+    },
+    
+    "content_scripts":   [
+      {
+        "matches":   [
+                        "https://*.zoom.us/wc/*",
+                        "http://*.zoom.us/wc/*",
+                        "https://zoom.us/wc/*",
+                        "http://zoom.us/wc/*"
+                     ],
+        "js":        [ 
+                        "content.js" 
+                     ],
+        "run_at":    "document_idle"
+      }
+    ],
+
+    "permissions": [
+      "activeTab", 
+      "https://*.zoom.us/j/*",
+      "http://*.zoom.us/j/*",
+      "https://zoom.us/j/*",
+      "http://zoom.us/j/*"
+    ]
+  }
